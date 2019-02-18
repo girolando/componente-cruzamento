@@ -1,0 +1,41 @@
+{
+  "name": "girolando/componente-cruzamento",
+  "description": "Componentes Girolando - Cruzamento",
+  "keywords": [
+    "laravel",
+    "girolando",
+    "componente",
+    "cruzamento"
+  ],
+  "licence": "MIT",
+  "authors": [
+    {
+      "name": "Anderson Nunes",
+      "email": "anderson.nuneseth@gmail.com"
+    }
+  ],
+  "require": {
+    "php": ">=7.1.0",
+    "illuminate/support" : "5.1.x",
+    "girolando/base-component" : "1.0.x",
+    "illuminate/routing": "5.1.x"
+  },
+  "autoload": {
+    "psr-4": {
+      "Girolando\\Componentes\\Cruzamento\\": "src/module/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Girolando\\Tests\\Componentes\\Cruzamento\\": "tests/"
+    }
+  },
+  "extra": {
+    "branch-alias": {
+      "dev-master": "1.0-dev"
+    }
+  },
+  "minimum-stability": "dev",
+  "prefer-stable": true
+}
+
