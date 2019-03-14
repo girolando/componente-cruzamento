@@ -50,7 +50,6 @@ class ComponentProvider extends BaseComponentProvider{
         $this->app->bind('Girolando.Componente.'.self::$componentNamespace, self::$componentService);
         $loader = \Illuminate\Foundation\AliasLoader::getInstance();
         $loader->alias(self::$componentNamespace, self::$facade);
-        $this->commands([UpCommand::class, DownCommand::class]);
 
         $this->app->when(ServerController::class)->needs(ComponentServiceContract::class)->give(self::$databaseService);
 

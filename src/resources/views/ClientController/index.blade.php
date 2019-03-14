@@ -1,14 +1,16 @@
 @extends('layout.blank.index')
 
 @section('content')
-    <table class="table tooltip-demo table-stripped table-hover comp-tbl-search-pessoa" data-page-size="10" data-filter=#filter>
+    <table class="table tooltip-demo table-stripped table-hover comp-tbl-search-cruzamento" data-page-size="10" data-filter=#filter>
         <thead>
         @if(isset($multiple) && $multiple)
             <th>#</th>
         @endif
-        <th>Código</th>
-        <th>Nome</th>
+        <th>Cobrição</th>
         <th>Tipo</th>
+        <th>Reprodutor</th>
+        <th>Matriz</th>
+        <th>Dt. Cruzamento</th>
         @if(!(isset($multiple) && $multiple))
             <th>Selecionar</th>
         @endif
@@ -20,54 +22,51 @@
     <script type="text/javascript">
 
         Componente.scope(function(){ //escopando as variáveis para não conflitarem com possíveis outros componentes do mesmo tipo abertos na tela
-            var componente = Componente.PessoaFactory.get('{!! $name !!}');
+            var componente = Componente.CruzamentoFactory.get('{!! $name !!}');
 
             var colunas = [
                 {
-                    name: 'codCfoCriador',
+                    name: 'numeroComunicacao',
+                    data: 'numeroComunicacao'
+                },
+                {
+                    name : 'tipoComunicacao',
                     data : function(obj){
-                        if(obj.codCfoCriador) return obj.codCfoCriador;
-                        if(obj.crmvVeterinario) return obj.crmvVeterinario;
-                        return '-';
+                        var tipo = {
+                            1: 'MONTA A CAMPO',
+                            2: 'MONTA CONTROLADA',
+                            3: 'INSEMINAÇÃO ARTIFICIAL',
+                            4: 'FIV',
+                            5: 'TE'
+                        }
+                        return tipo[obj.tipoComunicacao];
                     }
                 },
                 {
-                    name : 'nomePessoa',
-                    data : function(obj){
-                        return '<label for="_comppessoa_{!! $name !!}_' + obj.id + '">' + obj.nomePessoa + '</label>';
+                    name: 'nomeReprodutor',
+                    data: function(obj) {
+                        return obj.nomeReprodutor + ' - ' + obj.registroReprodutor;
                     }
                 },
-                {name : 'isCriadorAtivo', searchable: false, orderable: false, data : function(obj){
-                    var tipo = '';
-
-                    if(obj.isCriadorAtivo == 1) {
-                        tipo += '<span data-toggle="tooltip" data-placement="top" data-original-title="{!! trans('ComponentePessoa::ClientController.tipos.associadoAtivo') !!}" class="label label-success">{!! trans('ComponentePessoa::ClientController.tipos.sgAssociadoAtivo') !!}</span> ' ;
+                {
+                    name: 'nomeMatriz',
+                    data: function(obj) {
+                        return obj.nomeMatriz + ' - ' + obj.registroMatriz;
                     }
-
-                    if(obj.idTipoCriador == 'ASSOC' && !obj.statusCriador) {
-                        tipo += '<span data-toggle="tooltip" data-placement="top" data-original-title="{!! trans('ComponentePessoa::ClientController.tipos.associadoInativo') !!}" class="label label-danger">{!! trans('ComponentePessoa::ClientController.tipos.sgAssociadoInativo') !!}</span> ';
+                },
+                {
+                    name: 'dataCruzamento',
+                    data: function(obj) {
+                        return moment(obj.dataCruzamento).format('D/MM/Y');
                     }
-
-                    if(obj.isFuncionario == 1){
-                        tipo += '<span data-toggle="tooltip" data-placement="top" data-original-title="{!! trans('ComponentePessoa::ClientController.tipos.funcionario') !!}" class="label label-primary">{!! trans('ComponentePessoa::ClientController.tipos.sgFuncionario') !!}</span> ';
-                    }
-
-                    if(obj.isTecnico == 1){
-                        tipo += '<span data-toggle="tooltip" data-placement="top" data-original-title="{!! trans('ComponentePessoa::ClientController.tipos.tecnico') !!}" class="label label-warning">{!! trans('ComponentePessoa::ClientController.tipos.sgTecnico') !!}</span> ';
-                    }
-
-                    if(obj.isVeterinario == 1){
-                        tipo += '<span data-toggle="tooltip" data-placement="top" data-original-title="{!! trans('ComponentePessoa::ClientController.tipos.veterinario') !!}" class="label label-info">{!! trans('ComponentePessoa::ClientController.tipos.sgVeterinario') !!}</span> ';
-                    }
-                    return tipo;
-                }}
+                }
             ];
 
             @if(isset($multiple) && $multiple)
                 colunas.unshift({
                 name : '{!! $tableName !!}.id',
                 data : function(obj){
-                    var idfield = '_comppessoa_{!! $name !!}_' + obj.id;
+                    var idfield = '_compcruzamento_{!! $name !!}_' + obj.id;
                     if(componente.dataTableInstance.DataTableQuery().isItemChecked(obj.id)) {
                         return '<input id="' + idfield + '" class="checkbox checkbox-primary chkSelecionar" type="checkbox" checked="checked" value="' + obj.id + '">';
                     }
@@ -78,14 +77,14 @@
                 colunas.push({
                 name : '{!! $tableName !!}.id',
                 data : function(obj){
-                    var idfield = '_comppessoa_{!! $name !!}_' + obj.id;
+                    var idfield = '_compcruzamento_{!! $name !!}_' + obj.id;
                     return '<button id="' + idfield + '" class="btn btn-sm btn-primary btnSelecionar" codigo="' + obj.id + '">Selecionar</button>';
                 }
             });
             @endif
 
 
-                    componente.dataTableInstance = $(".comp-tbl-search-pessoa")
+                    componente.dataTableInstance = $(".comp-tbl-search-cruzamento")
                     .on('xhr.dt', function(){
                         setTimeout(function(){
                             $("[data-toggle=tooltip]").tooltip();
@@ -105,7 +104,7 @@
                         },
                         columns : colunas,
                         ajax : {
-                            url : '/vendor-girolando/componentes/pessoa',
+                            url : '/vendor-girolando/componentes/cruzamento',
                             data : function(obj){
                                 obj.name = '{!! $name !!}';
                             }

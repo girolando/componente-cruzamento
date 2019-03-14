@@ -43,5 +43,10 @@ class DatabaseEntity extends Model
         'codigoCruzamentoAutorizado',
         'statusCruzamentoAutorizado',
         'tipoComunicacao',
+        'codigoPessoaComunicacao',
+        'codigoPessoaAutorizada',
+        'qtdFilhos',
+        'qtdViavelEmbriao',
+        'qtdImplantada',
     ];
 }

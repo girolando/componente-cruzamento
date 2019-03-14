@@ -1,8 +1,9 @@
 <?php
-namespace Girolando\Componentes\Pessoa\Http\Controllers;
+namespace Girolando\Componentes\Cruzamento\Http\Controllers;
 
 use Andersonef\Repositories\Abstracts\ServiceAbstract;
 use Girolando\BaseComponent\Contracts\ComponentServiceContract;
+use Girolando\Componentes\Cruzamento\Services\Server\DatabaseEntityService;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 
@@ -14,7 +15,7 @@ class ServerController extends Controller
      * constructor.
      * @param $service
      */
-    public function __construct(ComponentServiceContract $service)
+    public function __construct(DatabaseEntityService $service)
     {
         $this->service = $service;
     }
