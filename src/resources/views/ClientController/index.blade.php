@@ -75,7 +75,7 @@
             });
             @else
                 colunas.push({
-                name : '{!! $tableName !!}.id',
+                name : 'dataCruzamento',
                 data : function(obj){
                     var idfield = '_compcruzamento_{!! $name !!}_' + obj.id;
                     return '<button id="' + idfield + '" class="btn btn-sm btn-primary btnSelecionar" codigo="' + obj.id + '">Selecionar</button>';
