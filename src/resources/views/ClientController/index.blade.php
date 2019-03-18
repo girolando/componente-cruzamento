@@ -67,6 +67,9 @@
                 name : '{!! $tableName !!}.id',
                 data : function(obj){
                     var idfield = '_compcruzamento_{!! $name !!}_' + obj.id;
+                    if (obj.cruzamentoEmAguardo) {
+                        return '<span class="label label-danger" data-toggle="tooltip" data-original-title="Cruzamento foi transferido porém ainda não foi autorizado">Bloqueado</span>'
+                    }
                     if(componente.dataTableInstance.DataTableQuery().isItemChecked(obj.id)) {
                         return '<input id="' + idfield + '" class="checkbox checkbox-primary chkSelecionar" type="checkbox" checked="checked" value="' + obj.id + '">';
                     }
@@ -75,8 +78,11 @@
             });
             @else
                 colunas.push({
-                name : 'dataCruzamento',
+                name : '{!! $tableName !!}.id',
                 data : function(obj){
+                    if (obj.cruzamentoEmAguardo) {
+                        return '<span class="label label-danger" data-toggle="tooltip" data-original-title="Cruzamento foi transferido porém ainda não foi autorizado">Bloqueado</span>'
+                    }
                     var idfield = '_compcruzamento_{!! $name !!}_' + obj.id;
                     return '<button id="' + idfield + '" class="btn btn-sm btn-primary btnSelecionar" codigo="' + obj.id + '">Selecionar</button>';
                 }

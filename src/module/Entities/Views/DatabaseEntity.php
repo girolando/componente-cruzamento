@@ -48,5 +48,6 @@ class DatabaseEntity extends Model
         'qtdFilhos',
         'qtdViavelEmbriao',
         'qtdImplantada',
+        'cruzamentoEmAguardo',
     ];
 }
