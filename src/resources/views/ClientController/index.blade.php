@@ -1,27 +1,183 @@
+{!! ComponenteAnimal::init() !!}
 @extends('layout.blank.index')
 
 @section('content')
-    <table class="table tooltip-demo table-stripped table-hover comp-tbl-search-cruzamento" data-page-size="10" data-filter=#filter>
-        <thead>
-        @if(isset($multiple) && $multiple)
-            <th>#</th>
-        @endif
-        <th>Cobrição</th>
-        <th>Tipo</th>
-        <th>Reprodutor</th>
-        <th>Matriz</th>
-        <th>Dt. Cruzamento</th>
-        @if(!(isset($multiple) && $multiple))
-            <th>Selecionar</th>
-        @endif
-        </thead>
-    </table>
+    <script src="/bower_components/twitter-bootstrap-wizard/jquery.bootstrap.wizard.min.js"></script>
+    <script src="/bower_components/twitter-bootstrap-wizard/prettify.js"></script>
+
+    <div class="container-componentecruzamento-{!! $name !!}">
+        <div class="rootwizard">
+            <div class="row">
+                <div class="navbar navbar-inner">
+                    <div class="container-fluid">
+                        <ul class="nav nav-tabs">
+                            <li class="active"><a class="filtros" href="#filtros" data-toggle="tab">Filtros</a></li>
+                            <li><a class="resultados" href="#resultados" data-toggle="tab">Resultados</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tab-content">
+                <div class="tab-pane active" id="filtros">
+                    <div class="form-group col-md-12">
+                        <div class="col-md-6">
+                            <label class="control-label">
+                                <input type="radio" name="tipofiltro" value="cdc"> Filtrar pelo código da CDC
+                            </label>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="control-label">
+                                <input type="radio" name="tipofiltro" value="animal"> Filtrar pelo Reprodutor ou Matriz
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="form-group col-md-12 filtro-cdc hide form form-horizontal">
+                        <label class="col-md-4 control-label">Informe o código da CDC:</label>
+                        <div class="col-md-6">
+                            <input type="number" class="form-control codigoComunicacao">
+                        </div>
+                        <button class="btn btn-filtrar btn-primary col-2">
+                            Filtrar
+                        </button>
+                    </div>
+
+                    <div class="row filtro-animal hide">
+
+                        <div class="form-group col-md-12 form form-horizontal">
+                            <label class="col-md-3 control-label">Informe o Reprodutor:</label>
+                            <div class="col-md-2">
+                                <input type="text" readonly class="form-control registroReprodutor">
+                            </div>
+                            <div class="col-md-4">
+                                <input type="text" readonly class="form-control nomeReprodutor">
+                            </div>
+                            <button class="btn btn-pesquisarTouro btn-primary col-3">
+                                Pesquisar
+                            </button>
+                            <componente type="animal" dispatcher-button=".btn-pesquisarTouro" filter-sexoAnimal="M" name="codigoReprodutor-comp{!! $name !!}"></componente>
+                        </div>
+
+                        <div class="form-group col-md-12 form form-horizontal">
+                            <label class="col-md-3 control-label">Informe a Matriz:</label>
+                            <div class="col-md-2">
+                                <input type="text" readonly class="form-control registroMatriz">
+                            </div>
+                            <div class="col-md-4">
+                                <input type="text" readonly class="form-control nomeMatriz">
+                            </div>
+                            <button class="btn btn-pesquisarMatriz btn-primary col-3">
+                                Pesquisar
+                            </button>
+                            <componente type="animal" dispatcher-button=".btn-pesquisarMatriz" filter-sexoAnimal="F" name="codigoMatriz-comp{!! $name !!}"></componente>
+                        </div>
+
+                        <div class="form-group col-md-12 text-right">
+                            <button class="btn btn-filtrar btn-primary">
+                                Filtrar
+                            </button>
+                        </div>
+                    </div>
+
+
+                </div>
+
+                <div class="tab-pane" id="resultados">
+
+                    <div class="col-md-12">
+                        <button class="btn btn-white btn-voltar">
+                            Voltar aos filtros
+                        </button>
+                    </div>
+
+                    <table class="table tooltip-demo table-stripped table-hover comp-tbl-search-cruzamento" data-page-size="10" data-filter=#filter>
+                        <thead>
+                        @if(isset($multiple) && $multiple)
+                            <th>#</th>
+                        @endif
+                        <th>Cobrição</th>
+                        <th>Tipo</th>
+                        <th>Reprodutor</th>
+                        <th>Matriz</th>
+                        <th>Dt. Cruzamento</th>
+                        @if(!(isset($multiple) && $multiple))
+                            <th>Selecionar</th>
+                        @endif
+                        </thead>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
 @endsection
 
 @section('javascript')
     <script type="text/javascript">
 
+        Componente.filtrado = false;
+
         Componente.scope(function(){ //escopando as variáveis para não conflitarem com possíveis outros componentes do mesmo tipo abertos na tela
+            let container = $(".container-componentecruzamento-{!! $name !!}");
+
+            let novosFiltros = [];
+            let tipoFiltro = '';
+            @if($_attrFilters)
+                @foreach($_attrFilters as $attr => $val)
+                    novosFiltros['{!! $attr !!}'] = '{!! $val !!}';
+                @endforeach
+            @endif
+
+            let compMatriz = Componente.AnimalFactory.get('codigoMatriz-comp{!! $name !!}');
+            let compReprodutor = Componente.AnimalFactory.get('codigoReprodutor-comp{!! $name !!}');
+
+            $('.btn-filtrar', container).on('click', function() {
+                if ($('[name=tipofiltro]', container).val() == 'cdc') {
+                    novosFiltros['numeroComunicacao'] = $('.codigoComunicacao', container).val();
+                }
+                componente.dataTableInstance.draw();
+            });
+
+            compMatriz.addEventListener(Componente.EVENTS.ON_FINISH, function(animal) {
+                if (!animal) return;
+                $(".nomeMatriz", container).val(animal.nomeAnimal);
+                $(".registroMatriz", container).val(animal.registro);
+                novosFiltros['codigoMatriz'] = animal.id;
+                componente.dataTableInstance.draw();
+            });
+
+            compReprodutor.addEventListener(Componente.EVENTS.ON_FINISH, function(animal) {
+                if (!animal) return;
+                $(".nomeReprodutor", container).val(animal.nomeAnimal);
+                $(".registroReprodutor", container).val(animal.registro);
+                novosFiltros['codigoReprodutor'] = animal.id;
+                componente.dataTableInstance.draw();
+            });
+
+
+            $('[name=tipofiltro]', container).on('change', function() {
+                let self = $(this);
+
+                $('.filtro-cdc', container).addClass('hide');
+                $('.filtro-animal', container).addClass('hide');
+                tipoFiltro = self.val();
+                if (self.val() == 'cdc') {
+                    return $('.filtro-cdc', container).removeClass('hide');
+                }
+                if (self.val() == 'animal') {
+                    return $('.filtro-animal', container).removeClass('hide');
+                }
+            });
+
+            let wizard = $('.rootwizard', container).bootstrapWizard({
+                previousSelector: $(".btn-voltar", container),
+                nextSelector: $(".btn-filtrar", container),
+                onTabClick: function (tab, navigation, index) {
+                    console.log('clicou na aba: ', tab, navigation, index);
+                    return true;
+                }
+            });
+
             var componente = Componente.CruzamentoFactory.get('{!! $name !!}');
 
             var colunas = [
@@ -90,10 +246,10 @@
             @endif
 
 
-                    componente.dataTableInstance = $(".comp-tbl-search-cruzamento")
+                    componente.dataTableInstance = $(".comp-tbl-search-cruzamento", container)
                     .on('xhr.dt', function(){
                         setTimeout(function(){
-                            $("[data-toggle=tooltip]").tooltip();
+                            $("[data-toggle=tooltip]", container).tooltip();
                         }, 0);
                     })
                     .CustomDataTable({
@@ -101,11 +257,28 @@
                         queryParams : {
                             idField : '{!! $tableName !!}.id',
                             filtersCallback : function(obj){
-                                @if($_attrFilters)
-                                        @foreach($_attrFilters as $attr => $val)
-                                        obj['{!! $attr !!}'] = '{!! $val !!}';
-                                @endforeach
-                                @endif
+
+                                console.log('verificando novosfiltros: ', novosFiltros);
+                                if (novosFiltros) {
+                                    delete obj.id;
+                                    delete obj.numeroComunicacao;
+                                    delete obj.codigoMatriz;
+                                    delete obj.codigoReprodutor;
+                                    console.log(novosFiltros);
+                                    console.log('filtros antigos: ', obj);
+                                    console.log('tipoFiltro =>>>', tipoFiltro);
+                                    for(let prop in novosFiltros) {
+                                        if (prop == 'numeroComunicacao' && tipoFiltro == 'animal') continue;
+                                        if (prop == 'codigoMatriz' && tipoFiltro == 'cdc') continue;
+                                        if (prop == 'codigoReprodutor' && tipoFiltro == 'cdc') continue;
+                                        console.log('adicionando filtro: ', novosFiltros[prop], prop);
+                                        obj[prop] = novosFiltros[prop];
+                                    }
+                                    console.log('filtros trataodos =>>> ', obj);
+                                } else {
+                                    console.log('estou adicionando -1 pq novosfiltros eh: ', novosFiltros);
+                                    obj.id = -1;
+                                }
                             }
                         },
                         columns : colunas,

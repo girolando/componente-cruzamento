@@ -49,5 +49,6 @@ class DatabaseEntity extends Model
         'qtdViavelEmbriao',
         'qtdImplantada',
         'cruzamentoEmAguardo',
+        'possuiReceptorasParaUso'
     ];
 }
