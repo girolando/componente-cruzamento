@@ -23,7 +23,7 @@
                     <div class="form-group col-md-12">
                         <div class="col-md-6">
                             <label class="control-label">
-                                <input type="radio" name="tipofiltro" value="cdc"> Filtrar pelo código da CDC
+                                <input type="radio" name="tipofiltro" value="cdc"> Filtrar pela CDC ou nr. Formulário
                             </label>
                         </div>
                         <div class="col-md-6">
@@ -34,9 +34,14 @@
                     </div>
 
                     <div class="form-group col-md-12 filtro-cdc hide form form-horizontal">
-                        <label class="col-md-4 control-label">Informe o código da CDC:</label>
-                        <div class="col-md-6">
+                        <label class="col-md-2 control-label">Código da CDC:</label>
+                        <div class="col-md-3">
                             <input type="number" class="form-control codigoComunicacao">
+                        </div>
+
+                        <label class="col-md-2 control-label">Nr. Formulário:</label>
+                        <div class="col-md-3">
+                            <input type="number" class="form-control numeroFormulario">
                         </div>
                         <button class="btn btn-filtrar btn-primary col-2">
                             Filtrar
@@ -46,28 +51,44 @@
                     <div class="row filtro-animal hide">
 
                         <div class="form-group col-md-12 form form-horizontal">
-                            <label class="col-md-3 control-label">Informe o Reprodutor:</label>
+                            <label class="col-md-2 control-label">Reprodutor:</label>
+                            <div class="col-md-3">
+                                <select class="form-control sangueReprodutor">
+                                    <option value="-1">COMP. RACIAL</option>
+                                    @foreach($sangues as $sangue)
+                                        <option value="{!! $sangue->codigoTipoSangue !!}">{!! $sangue->descTipoSangue !!} </option>
+                                    @endforeach
+                                </select>
+                            </div>
                             <div class="col-md-2">
-                                <input type="text" readonly class="form-control registroReprodutor">
+                                <input type="text" placeholder="Registro" class="form-control registroReprodutor">
                             </div>
-                            <div class="col-md-4">
-                                <input type="text" readonly class="form-control nomeReprodutor">
+                            <div class="col-md-3">
+                                <input type="text" placeholder="Nome" class="form-control nomeReprodutor">
                             </div>
-                            <button class="btn btn-pesquisarTouro btn-primary col-3">
+                            <button class="btn btn-pesquisarTouro btn-primary col-2">
                                 Pesquisar
                             </button>
                             <componente type="animal" dispatcher-button=".btn-pesquisarTouro" filter-sexoAnimal="M" name="codigoReprodutor-comp{!! $name !!}"></componente>
                         </div>
 
                         <div class="form-group col-md-12 form form-horizontal">
-                            <label class="col-md-3 control-label">Informe a Matriz:</label>
+                            <label class="col-md-2 control-label">Matriz:</label>
+                            <div class="col-md-3">
+                                    <select class="form-control sangueMatriz">
+                                        <option value="-1">COMP. RACIAL</option>
+                                        @foreach($sangues as $sangue)
+                                            <option value="{!! $sangue->codigoTipoSangue !!}">{!! $sangue->descTipoSangue !!} </option>
+                                        @endforeach
+                                    </select>
+                                </div>
                             <div class="col-md-2">
-                                <input type="text" readonly class="form-control registroMatriz">
+                                <input type="text" placeholder="Registro" class="form-control registroMatriz">
                             </div>
-                            <div class="col-md-4">
-                                <input type="text" readonly class="form-control nomeMatriz">
+                            <div class="col-md-3">
+                                <input type="text" placeholder="Nome" class="form-control nomeMatriz">
                             </div>
-                            <button class="btn btn-pesquisarMatriz btn-primary col-3">
+                            <button class="btn btn-pesquisarMatriz btn-primary col-2">
                                 Pesquisar
                             </button>
                             <componente type="animal" dispatcher-button=".btn-pesquisarMatriz" filter-sexoAnimal="F" name="codigoMatriz-comp{!! $name !!}"></componente>
@@ -128,20 +149,69 @@
                 @endforeach
             @endif
 
+
             let compMatriz = Componente.AnimalFactory.get('codigoMatriz-comp{!! $name !!}');
             let compReprodutor = Componente.AnimalFactory.get('codigoReprodutor-comp{!! $name !!}');
 
             $('.btn-filtrar', container).on('click', function() {
                 if ($('[name=tipofiltro]', container).val() == 'cdc') {
                     novosFiltros['numeroComunicacao'] = $('.codigoComunicacao', container).val();
+                    Componente.codigoComunicacaoDigitada = $('.codigoComunicacao', container).val();
+
+                    novosFiltros['codigoAntigoComunicacao'] = $('.numeroFormulario', container).val();
+                    Componente.numeroFormularioDigitado = $('.numeroFormulario', container).val();
                 }
+                if (!novosFiltros['numeroComunicacao']) delete novosFiltros['numeroComunicacao'];
+                if (!novosFiltros['codigoAntigoComunicacao']) delete novosFiltros['codigoAntigoComunicacao'];
                 componente.dataTableInstance.draw();
+            });
+
+            $(".btn-pesquisarTouro", container).on('click', function() {
+                compReprodutor.dispatch();
+            });
+            $(".btn-pesquisarMatriz", container).on('click', function() {
+                compMatriz.dispatch();
+            });
+
+            $(".registroReprodutor, .registroMatriz, .nomeReprodutor, .nomeMatriz", container).on('change', async function() {
+                const $fieldRegistro    = $(this);
+                const $fieldSangue      = ($(this).hasClass('registroMatriz')) ? $(".sangueMatriz", container) : $(".sangueReprodutor", container);
+                const $fieldNome        = ($(this).hasClass('registroMatriz')) ? $(".nomeMatriz", container) : $(".nomeReprodutor", container);
+                const indexCodigo       = ($(this).hasClass('registroMatriz')) ? 'codigoMatriz' : 'codigoReprodutor';
+                const sexoEsperado      = ($(this).hasClass('registroMatriz')) ? 'F' : 'M';
+                const componenteAnimal  = ($(this).hasClass('registroMatriz')) ? compMatriz : compReprodutor;
+                const isBuscaRegistro   = ($(this).hasClass('registroMatriz') || $(this).hasClass('registroReprodutor'));
+                const objBusca          = {};
+
+                if ($fieldSangue.val() > -1) {
+                    objBusca.codigoTipoSangue = $fieldSangue.val();
+                }
+                if ($fieldRegistro.val()) {
+                    const registroLimpoDigitado = $fieldRegistro.val().replace(/\-/g, '').replace(/\s/g);
+                    objBusca.registroLimpoAnimal = registroLimpoDigitado;
+                }
+                if ($fieldNome.val()) {
+                    objBusca.nomeAnimal = $fieldNome.val();
+                }
+                objBusca.sexoAnimal = sexoEsperado;
+                System.beginLoading();
+                const animais = await componenteAnimal.findBy(objBusca);
+                System.stopLoading();
+                $fieldNome.val('');
+
+                if (animais.length === 1 && animais[0].sexoAnimal === sexoEsperado) {
+                    $fieldRegistro.val(animais[0].registroAnimal);
+                    $fieldNome.val(animais[0].nomeAnimal);
+                    $fieldSangue.val(animais[0].codigoTipoSangue);
+                    novosFiltros[indexCodigo] = animais[0].id;
+                }
             });
 
             compMatriz.addEventListener(Componente.EVENTS.ON_FINISH, function(animal) {
                 if (!animal) return;
                 $(".nomeMatriz", container).val(animal.nomeAnimal);
                 $(".registroMatriz", container).val(animal.registro);
+                $(".sangueMatriz", container).val(animal.codigoTipoSangue);
                 novosFiltros['codigoMatriz'] = animal.id;
                 componente.dataTableInstance.draw();
             });
@@ -150,6 +220,7 @@
                 if (!animal) return;
                 $(".nomeReprodutor", container).val(animal.nomeAnimal);
                 $(".registroReprodutor", container).val(animal.registro);
+                $(".sangueReprodutor", container).val(animal.codigoTipoSangue);
                 novosFiltros['codigoReprodutor'] = animal.id;
                 componente.dataTableInstance.draw();
             });
@@ -179,6 +250,20 @@
             });
 
             var componente = Componente.CruzamentoFactory.get('{!! $name !!}');
+
+
+
+            if (Componente.codigoComunicacaoDigitada || Componente.numeroFormularioDigitado) {
+                $('[name=tipofiltro][value=cdc]', container).attr('checked', true).trigger('change');
+                if (Componente.codigoComunicacaoDigitada) {
+                    $('.codigoComunicacao', container).val(Componente.codigoComunicacaoDigitada);
+                }
+                if (Componente.numeroFormularioDigitado) {
+                    $('.numeroFormulario', container).val(Componente.numeroFormularioDigitado);
+                }
+                $('.btn-filtrar', container).trigger('click');
+            }
+
 
             var colunas = [
                 {
@@ -313,4 +398,11 @@
             @endif
         });
     </script>
+    <style type="text/css">
+        .container-componentecruzamento-{!! $name !!} input[type=number]::-webkit-inner-spin-button, 
+        .container-componentecruzamento-{!! $name !!} input[type=number]::-webkit-outer-spin-button { 
+        -webkit-appearance: none; 
+        margin: 0; 
+        }
+    </style>
 @endsection

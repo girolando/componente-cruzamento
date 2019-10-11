@@ -29,6 +29,7 @@ class DatabaseEntity extends Model
         'codigoCruzamento',
         'codigoComunicacao',
         'numeroComunicacao',
+        'codigoAntigoComunicacao',
         'codigoMatriz',
         'nomeMatriz',
         'registroMatriz',
