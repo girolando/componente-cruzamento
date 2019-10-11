@@ -49,6 +49,18 @@ class ClientController extends Controller
         $request->merge(['_attrFilters' => $filters]);
         $request->merge(['tableName' => (new DatabaseEntity())->getTable()]);
 
+        $sangues = $this->apiConnector->get('/vendor-girolando/server/componentes/animal/tiposangue');
+        $sangues = collect($sangues->data)
+            ->map(function($sangue) {
+                if (is_null($sangue->ordemMapaTipoSangue)) {
+                    $sangue->ordemMapaTipoSangue = 999;
+                }
+                return $sangue;
+            })
+            ->sortBy('ordemMapaTipoSangue');
+            
+        $request->merge(['sangues' => $sangues]);
+
         return view(ComponentProvider::$componentNamespace.'::ClientController.index', $request->all());
     }
 }
