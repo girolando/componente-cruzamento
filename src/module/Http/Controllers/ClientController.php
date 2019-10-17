@@ -63,4 +63,10 @@ class ClientController extends Controller
 
         return view(ComponentProvider::$componentNamespace.'::ClientController.index', $request->all());
     }
+
+    public function findBy(Request $request)
+    {
+        $response = $this->apiConnector->get(ComponentProvider::$routeFindByServer, $request->all());
+        return new JsonResponse($response->data);
+    }
 }

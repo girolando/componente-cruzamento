@@ -6,12 +6,15 @@
 
             //aki é certeza que o namespace Componente existe, portanto:
             Componente.Cruzamento = function(name, attributes){
-                this.attributes = attributes;
-                this.name = name;
-                this.dataTableInstance = null;
-                var self = this;
+                this.attributes         = attributes;
+                this.name               = name;
+                this.dataTableInstance  = null;
+                this.urlFindBy          = '/vendor-girolando/componentes/cruzamento-findby';
+                var self                = this;
 
                 /*** Lógica de construtor do componente ****/
+
+                this.getListItems       = () => null;
 
 
                 /**** Lógica customizada do componente ******/

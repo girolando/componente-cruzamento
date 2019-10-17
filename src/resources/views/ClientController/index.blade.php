@@ -41,7 +41,7 @@
 
                         <label class="col-md-2 control-label">Nr. Formulário:</label>
                         <div class="col-md-3">
-                            <input type="number" class="form-control numeroFormulario">
+                            <input type="text" class="form-control numeroFormulario">
                         </div>
                         <button class="btn btn-filtrar btn-primary col-2">
                             Filtrar
@@ -66,9 +66,14 @@
                             <div class="col-md-3">
                                 <input type="text" placeholder="Nome" class="form-control nomeReprodutor">
                             </div>
-                            <button class="btn btn-pesquisarTouro btn-primary col-2">
-                                Pesquisar
-                            </button>
+                            <div class="col-2 btn-group">
+                                <button disabled class="btn btn-limparReprodutor btn-white" data-toggle="tooltip" data-original-title="Limpar Reprodutor">
+                                    <i class="fa fa-eraser"></i>
+                                </button>
+                                <button class="btn btn-pesquisarTouro btn-primary" data-toggle="tooltip" data-original-title="Pesquisar">
+                                    <i class="fa fa-search"></i>
+                                </button>
+                            </div>
                             <componente type="animal" dispatcher-button=".btn-pesquisarTouro" filter-sexoAnimal="M" name="codigoReprodutor-comp{!! $name !!}"></componente>
                         </div>
 
@@ -88,9 +93,15 @@
                             <div class="col-md-3">
                                 <input type="text" placeholder="Nome" class="form-control nomeMatriz">
                             </div>
-                            <button class="btn btn-pesquisarMatriz btn-primary col-2">
-                                Pesquisar
-                            </button>
+
+                            <div class="col-2 btn-group">
+                                <button disabled class="btn btn-limparMatriz btn-white" data-toggle="tooltip" data-original-title="Limpar Matriz">
+                                    <i class="fa fa-eraser"></i>
+                                </button>
+                                <button class="btn btn-pesquisarMatriz btn-primary" data-toggle="tooltip" data-original-title="Pesquisar">
+                                    <i class="fa fa-search"></i>
+                                </button>
+                            </div>
                             <componente type="animal" dispatcher-button=".btn-pesquisarMatriz" filter-sexoAnimal="F" name="codigoMatriz-comp{!! $name !!}"></componente>
                         </div>
 
@@ -152,36 +163,73 @@
 
             let compMatriz = Componente.AnimalFactory.get('codigoMatriz-comp{!! $name !!}');
             let compReprodutor = Componente.AnimalFactory.get('codigoReprodutor-comp{!! $name !!}');
+            let matrizSelecionada = null;
+            let reprodutorSelecionado = null;
+
+            const renderizarAnimal = function(animal, posicao) {
+                if (!(posicao === 'matriz' || posicao === 'reprodutor')) throw new Error('Posição deve ser: matriz ou reprodutor');
+                const $fieldSangue      = $((posicao === 'matriz') ? ".sangueMatriz" : ".sangueReprodutor", container);
+                const $fieldRegistro    = $((posicao === 'matriz') ? ".registroMatriz" : ".registroReprodutor", container);
+                const $fieldNome        = $((posicao === 'matriz') ? ".nomeMatriz" : ".nomeReprodutor", container);
+                const $btnLimpar        = $((posicao === 'matriz') ? ".btn-limparMatriz" : ".btn-limparReprodutor", container);
+
+                console.log('renderizando animal', animal, posicao, $fieldNome);
+
+                if (posicao === 'matriz') {
+                    matrizSelecionada = animal;
+                } else {
+                    reprodutorSelecionado = animal;
+                }
+
+                if (!animal) {
+                    $fieldSangue.attr('disabled', false).val(-1);
+                    $fieldNome.attr('readonly', false).val('');
+                    $fieldRegistro.attr('readonly', false).val('');
+                    $btnLimpar.attr('disabled', true);
+                    return;
+                }
+                $fieldSangue.attr('disabled', true).val(animal.codigoTipoSangue);
+                $fieldNome.attr('readonly', true).val(animal.nomeAnimal);
+                $fieldRegistro.attr('readonly', true).val(animal.registroAnimal);
+                $btnLimpar.attr('disabled', false);
+            }
+
+            $(".btn-limparMatriz, .btn-limparReprodutor", container).on('click', function() {
+                if ($(this).hasClass('btn-limparMatriz')) {
+                    return renderizarAnimal(null, 'matriz');
+                }
+                renderizarAnimal(null, 'reprodutor');
+            });
 
             $('.btn-filtrar', container).on('click', function() {
-                if ($('[name=tipofiltro]', container).val() == 'cdc') {
-                    novosFiltros['numeroComunicacao'] = $('.codigoComunicacao', container).val();
-                    Componente.codigoComunicacaoDigitada = $('.codigoComunicacao', container).val();
+                novosFiltros = [];
+                if ($('[name=tipofiltro]:checked', container).val() == 'cdc') {
+                    if ($('.codigoComunicacao', container).val()) {
+                        novosFiltros['numeroComunicacao'] = $('.codigoComunicacao', container).val();
+                        Componente.codigoComunicacaoDigitada = $('.codigoComunicacao', container).val();
+                    }
 
-                    novosFiltros['codigoAntigoComunicacao'] = $('.numeroFormulario', container).val();
-                    Componente.numeroFormularioDigitado = $('.numeroFormulario', container).val();
+                    if ($('.numeroFormulario', container).val()) {
+                        novosFiltros['codigoAntigoComunicacao'] = $('.numeroFormulario', container).val();
+                        Componente.numeroFormularioDigitado = $('.numeroFormulario', container).val();
+                    }
+                } else {
+                    if (matrizSelecionada) novosFiltros['codigoMatriz'] = matrizSelecionada.id;
+                    if (reprodutorSelecionado) novosFiltros['codigoReprodutor'] = reprodutorSelecionado.id;
                 }
-                if (!novosFiltros['numeroComunicacao']) delete novosFiltros['numeroComunicacao'];
-                if (!novosFiltros['codigoAntigoComunicacao']) delete novosFiltros['codigoAntigoComunicacao'];
                 componente.dataTableInstance.draw();
             });
 
-            $(".btn-pesquisarTouro", container).on('click', function() {
-                compReprodutor.dispatch();
-            });
-            $(".btn-pesquisarMatriz", container).on('click', function() {
-                compMatriz.dispatch();
-            });
-
             $(".registroReprodutor, .registroMatriz, .nomeReprodutor, .nomeMatriz", container).on('change', async function() {
-                const $fieldRegistro    = $(this);
-                const $fieldSangue      = ($(this).hasClass('registroMatriz')) ? $(".sangueMatriz", container) : $(".sangueReprodutor", container);
-                const $fieldNome        = ($(this).hasClass('registroMatriz')) ? $(".nomeMatriz", container) : $(".nomeReprodutor", container);
-                const indexCodigo       = ($(this).hasClass('registroMatriz')) ? 'codigoMatriz' : 'codigoReprodutor';
-                const sexoEsperado      = ($(this).hasClass('registroMatriz')) ? 'F' : 'M';
-                const componenteAnimal  = ($(this).hasClass('registroMatriz')) ? compMatriz : compReprodutor;
+                const $fieldRegistro    = ($(this).hasClass('registroMatriz') || $(this).hasClass('nomeMatriz')) ? $(".registroMatriz", container) : $(".registroReprodutor", container);
+                const $fieldSangue      = ($(this).hasClass('registroMatriz') || $(this).hasClass('nomeMatriz')) ? $(".sangueMatriz", container) : $(".sangueReprodutor", container);
+                const $fieldNome        = ($(this).hasClass('registroMatriz') || $(this).hasClass('nomeMatriz')) ? $(".nomeMatriz", container) : $(".nomeReprodutor", container);
+                const indexCodigo       = ($(this).hasClass('registroMatriz') || $(this).hasClass('nomeMatriz')) ? 'codigoMatriz' : 'codigoReprodutor';
+                const sexoEsperado      = ($(this).hasClass('registroMatriz') || $(this).hasClass('nomeMatriz')) ? 'F' : 'M';
+                const componenteAnimal  = ($(this).hasClass('registroMatriz') || $(this).hasClass('nomeMatriz')) ? compMatriz : compReprodutor;
                 const isBuscaRegistro   = ($(this).hasClass('registroMatriz') || $(this).hasClass('registroReprodutor'));
                 const objBusca          = {};
+                const $btnLimpar        = ($(this).hasClass('registroMatriz')) ? $(".btnLimparMatriz", container) : $(".btnLimparReprodutor", container);
 
                 if ($fieldSangue.val() > -1) {
                     objBusca.codigoTipoSangue = $fieldSangue.val();
@@ -199,12 +247,23 @@
                 System.stopLoading();
                 $fieldNome.val('');
 
+                $btnLimpar.attr('disabled', true);
+
+
+                renderizarAnimal(null, (sexoEsperado) === 'F' ? 'matriz' : 'reprodutor');
                 if (animais.length === 1 && animais[0].sexoAnimal === sexoEsperado) {
-                    $fieldRegistro.val(animais[0].registroAnimal);
-                    $fieldNome.val(animais[0].nomeAnimal);
-                    $fieldSangue.val(animais[0].codigoTipoSangue);
-                    novosFiltros[indexCodigo] = animais[0].id;
-                }
+                    renderizarAnimal(animais[0], (sexoEsperado) === 'F' ? 'matriz' : 'reprodutor');
+                    reprodutorSelecionado = null;
+                    matrizSelecionada = null;
+                    
+                    if (sexoEsperado === 'M') {
+                        reprodutorSelecionado = animais[0];
+                    } else {
+                        matrizSelecionada = animais[0];
+                    }
+                    $btnLimpar.attr('disabled', false);
+                    console.log('chegou aki', sexoEsperado, reprodutorSelecionado, matrizSelecionada);
+                } 
             });
 
             compMatriz.addEventListener(Componente.EVENTS.ON_FINISH, function(animal) {
@@ -212,7 +271,8 @@
                 $(".nomeMatriz", container).val(animal.nomeAnimal);
                 $(".registroMatriz", container).val(animal.registro);
                 $(".sangueMatriz", container).val(animal.codigoTipoSangue);
-                novosFiltros['codigoMatriz'] = animal.id;
+                matrizSelecionada = animal;
+                renderizarAnimal(animal, 'matriz');
                 componente.dataTableInstance.draw();
             });
 
@@ -221,7 +281,8 @@
                 $(".nomeReprodutor", container).val(animal.nomeAnimal);
                 $(".registroReprodutor", container).val(animal.registro);
                 $(".sangueReprodutor", container).val(animal.codigoTipoSangue);
-                novosFiltros['codigoReprodutor'] = animal.id;
+                reprodutorSelecionado = animal;
+                renderizarAnimal(animal, 'reprodutor');
                 componente.dataTableInstance.draw();
             });
 
@@ -393,6 +454,19 @@
                     componente.selectedItems.clear();
                     componente.selectedItems.put($(this).attr('codigo'), entity);
                     componente.modalInstance.modal('hide');
+                    componente.getListItems         = (offset, limit) => {
+                        let url = componente.dataTableInstance.data().ajax.url();
+                        url += '?';
+                        let params = componente.dataTableInstance.data().ajax.params();
+                        params.length = limit;
+                        params.start = offset;
+                        url += jQuery.param(params);
+                        return new Promise((resolve, reject) => {
+                            $.get(url, function(response) {
+                                resolve(response.data);
+                            });
+                        });
+                    };
                     componente.triggerEvent(Componente.EVENTS.ON_FINISH, entity);
                 });
             @endif

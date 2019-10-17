@@ -40,7 +40,7 @@ class DatabaseEntityService extends ServiceAbstract implements ComponentServiceC
             ->usingDataTableQuery($dataTableQueryName)
             ->createDataset((new DatabaseEntity())->getFillable());
         //como não tem nenhuma validação, nenhum tipo de filtro especial pra fazer nesse querybuilder... então já retorno o dataset.(que é um querybuilder... só add nele outros wheres q eu possa precisar)
-
+        $dataset->whereIn('tipoComunicacao', [1,2,3,4,5]);
         return $dataset;
     }
 

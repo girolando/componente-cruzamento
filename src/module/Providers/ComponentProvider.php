@@ -16,6 +16,8 @@ class ComponentProvider extends BaseComponentProvider{
 
     public static $routeModal = '/vendor-girolando/componentes/cruzamento';
     public static $routeServer = '/vendor-girolando/server/componentes/cruzamento';
+    public static $routeFindByClient = '/vendor-girolando/componentes/cruzamento-findby';
+    public static $routeFindByServer = '/vendor-girolando/server/componentes/cruzamento-findby';
     public static $componentNamespace = 'ComponenteCruzamento';
     public static $entity = DatabaseEntity::class;
     public static $facade = ComponenteCruzamento::class;
@@ -37,6 +39,8 @@ class ComponentProvider extends BaseComponentProvider{
         $router->group(['namespace' => 'Girolando\Componentes\\'.self::$componente.'\Http\Controllers'], function() use($router){
             $router->resource(self::$routeModal, 'ClientController', ['only' => ['index']]);
             $router->resource(self::$routeServer, 'ServerController', ['only' => ['index']]);
+            $router->get(self::$routeFindByClient, 'ClientController@findBy');
+            $router->get(self::$routeFindByServer, 'ServerController@findBy');
         });
     }
 
