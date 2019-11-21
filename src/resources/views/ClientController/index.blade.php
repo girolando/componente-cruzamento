@@ -182,15 +182,15 @@
                 }
 
                 if (!animal) {
-                    $fieldSangue.attr('disabled', false).val(-1);
-                    $fieldNome.attr('readonly', false).val('');
-                    $fieldRegistro.attr('readonly', false).val('');
+                    $fieldSangue.attr('disabled', false).val(-1).trigger('change');
+                    $fieldNome.attr('readonly', false).val('').trigger('change');
+                    $fieldRegistro.attr('readonly', false).val('').trigger('change');
                     $btnLimpar.attr('disabled', true);
                     return;
                 }
-                $fieldSangue.attr('disabled', true).val(animal.codigoTipoSangue);
-                $fieldNome.attr('readonly', true).val(animal.nomeAnimal);
-                $fieldRegistro.attr('readonly', true).val(animal.registroAnimal);
+                $fieldSangue.attr('disabled', true).val(animal.codigoTipoSangue).trigger('change');
+                $fieldNome.attr('readonly', true).val(animal.nomeAnimal).trigger('change');
+                $fieldRegistro.attr('readonly', true).val(animal.registroAnimal).trigger('change');
                 $btnLimpar.attr('disabled', false);
             }
 
@@ -202,6 +202,7 @@
             });
 
             $('.btn-filtrar', container).on('click', function() {
+                console.log('click em btn filtrar');
                 novosFiltros = [];
                 if ($('[name=tipofiltro]:checked', container).val() == 'cdc') {
                     if ($('.codigoComunicacao', container).val()) {
@@ -220,50 +221,32 @@
                 componente.dataTableInstance.draw();
             });
 
-            $(".registroReprodutor, .registroMatriz, .nomeReprodutor, .nomeMatriz", container).on('change', async function() {
+
+            $(".registroReprodutor, .registroMatriz, .nomeReprodutor, .nomeMatriz, .sangueReprodutor, .sangueMatriz", container).on('change', async function() {
                 const $fieldRegistro    = ($(this).hasClass('registroMatriz') || $(this).hasClass('nomeMatriz')) ? $(".registroMatriz", container) : $(".registroReprodutor", container);
                 const $fieldSangue      = ($(this).hasClass('registroMatriz') || $(this).hasClass('nomeMatriz')) ? $(".sangueMatriz", container) : $(".sangueReprodutor", container);
                 const $fieldNome        = ($(this).hasClass('registroMatriz') || $(this).hasClass('nomeMatriz')) ? $(".nomeMatriz", container) : $(".nomeReprodutor", container);
-                const indexCodigo       = ($(this).hasClass('registroMatriz') || $(this).hasClass('nomeMatriz')) ? 'codigoMatriz' : 'codigoReprodutor';
-                const sexoEsperado      = ($(this).hasClass('registroMatriz') || $(this).hasClass('nomeMatriz')) ? 'F' : 'M';
+                //const indexCodigo       = ($(this).hasClass('registroMatriz') || $(this).hasClass('nomeMatriz')) ? 'codigoMatriz' : 'codigoReprodutor';
+                //const sexoEsperado      = ($(this).hasClass('registroMatriz') || $(this).hasClass('nomeMatriz')) ? 'F' : 'M';
                 const componenteAnimal  = ($(this).hasClass('registroMatriz') || $(this).hasClass('nomeMatriz')) ? compMatriz : compReprodutor;
                 const isBuscaRegistro   = ($(this).hasClass('registroMatriz') || $(this).hasClass('registroReprodutor'));
                 const objBusca          = {};
                 const $btnLimpar        = ($(this).hasClass('registroMatriz')) ? $(".btnLimparMatriz", container) : $(".btnLimparReprodutor", container);
 
+                console.log('setei os attributos do componente xD');
+                componenteAnimal.$dom.removeAttr('filter-codigoTipoSangue');
+                componenteAnimal.$dom.removeAttr('filter-like-registroLimpoAnimal');
+                componenteAnimal.$dom.removeAttr('filter-like-nomeAnimal');
                 if ($fieldSangue.val() > -1) {
-                    objBusca.codigoTipoSangue = $fieldSangue.val();
+                    componenteAnimal.setAttribute('filter-codigoTipoSangue', $fieldSangue.val());
                 }
                 if ($fieldRegistro.val()) {
                     const registroLimpoDigitado = $fieldRegistro.val().replace(/\-/g, '').replace(/\s/g);
-                    objBusca.registroLimpoAnimal = registroLimpoDigitado;
+                    componenteAnimal.setAttribute('filter-like-registroLimpoAnimal', `%${registroLimpoDigitado}%`);
                 }
                 if ($fieldNome.val()) {
-                    objBusca.nomeAnimal = $fieldNome.val();
+                    componenteAnimal.setAttribute('filter-like-nomeAnimal', `%${$fieldNome.val()}%`);
                 }
-                objBusca.sexoAnimal = sexoEsperado;
-                System.beginLoading();
-                const animais = await componenteAnimal.findBy(objBusca);
-                System.stopLoading();
-                $fieldNome.val('');
-
-                $btnLimpar.attr('disabled', true);
-
-
-                renderizarAnimal(null, (sexoEsperado) === 'F' ? 'matriz' : 'reprodutor');
-                if (animais.length === 1 && animais[0].sexoAnimal === sexoEsperado) {
-                    renderizarAnimal(animais[0], (sexoEsperado) === 'F' ? 'matriz' : 'reprodutor');
-                    reprodutorSelecionado = null;
-                    matrizSelecionada = null;
-                    
-                    if (sexoEsperado === 'M') {
-                        reprodutorSelecionado = animais[0];
-                    } else {
-                        matrizSelecionada = animais[0];
-                    }
-                    $btnLimpar.attr('disabled', false);
-                    console.log('chegou aki', sexoEsperado, reprodutorSelecionado, matrizSelecionada);
-                } 
             });
 
             compMatriz.addEventListener(Componente.EVENTS.ON_FINISH, function(animal) {
@@ -305,7 +288,6 @@
                 previousSelector: $(".btn-voltar", container),
                 nextSelector: $(".btn-filtrar", container),
                 onTabClick: function (tab, navigation, index) {
-                    console.log('clicou na aba: ', tab, navigation, index);
                     return true;
                 }
             });
@@ -313,17 +295,21 @@
             var componente = Componente.CruzamentoFactory.get('{!! $name !!}');
 
 
-
-            if (Componente.codigoComunicacaoDigitada || Componente.numeroFormularioDigitado) {
-                $('[name=tipofiltro][value=cdc]', container).attr('checked', true).trigger('change');
-                if (Componente.codigoComunicacaoDigitada) {
-                    $('.codigoComunicacao', container).val(Componente.codigoComunicacaoDigitada);
-                }
-                if (Componente.numeroFormularioDigitado) {
-                    $('.numeroFormulario', container).val(Componente.numeroFormularioDigitado);
-                }
-                $('.btn-filtrar', container).trigger('click');
-            }
+            /**
+                Código retirado em 21-11-2019
+                Causava bug ao abrir novamente o componente caso ja tinha sido filtrado anteriormente
+             */
+            // if (Componente.codigoComunicacaoDigitada || Componente.numeroFormularioDigitado) {
+            //     $('[name=tipofiltro][value=cdc]', container).attr('checked', true).trigger('change');
+            //     if (Componente.codigoComunicacaoDigitada) {
+            //         $('.codigoComunicacao', container).val(Componente.codigoComunicacaoDigitada);
+            //     }
+            //     if (Componente.numeroFormularioDigitado) {
+            //         $('.numeroFormulario', container).val(Componente.numeroFormularioDigitado);
+            //     }
+            //     console.log('vou triggar o evento de clicar no botao', $('.btn-filtrar', container).length);
+            //     $('.btn-filtrar', container).trigger('click');
+            // }
 
 
             var colunas = [
@@ -410,7 +396,6 @@
                                     delete obj.numeroComunicacao;
                                     delete obj.codigoMatriz;
                                     delete obj.codigoReprodutor;
-                                    console.log(novosFiltros);
                                     console.log('filtros antigos: ', obj);
                                     console.log('tipoFiltro =>>>', tipoFiltro);
                                     for(let prop in novosFiltros) {
