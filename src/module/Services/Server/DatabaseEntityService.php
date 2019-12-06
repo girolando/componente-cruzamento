@@ -41,6 +41,12 @@ class DatabaseEntityService extends ServiceAbstract implements ComponentServiceC
             ->createDataset((new DatabaseEntity())->getFillable());
         //como não tem nenhuma validação, nenhum tipo de filtro especial pra fazer nesse querybuilder... então já retorno o dataset.(que é um querybuilder... só add nele outros wheres q eu possa precisar)
         $dataset->whereIn('tipoComunicacao', [1,2,3,4,5]);
+
+        /*
+         * Adicionado para não permitir mostrar cruzamentos duplicados devido a alteração na view comp.Cruzamento 
+         * que agora mostra cruzamento duplicado caso tenha receptoras liberadas parcialmente, o que faz ter mais de um codigoPessoaAutorizada
+        */
+        $dataset->select('id','numeroComunicacao', 'tipoComunicacao', 'registroReprodutor','nomeReprodutor', 'registroMatriz','nomeMatriz', 'dataCruzamento')->distinct();
         return $dataset;
     }
 
