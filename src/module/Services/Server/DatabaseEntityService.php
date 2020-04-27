@@ -46,8 +46,8 @@ class DatabaseEntityService extends ServiceAbstract implements ComponentServiceC
          * Adicionado para não permitir mostrar cruzamentos duplicados devido a alteração na view comp.Cruzamento 
          * que agora mostra cruzamento duplicado caso tenha receptoras liberadas parcialmente, o que faz ter mais de um codigoPessoaAutorizada
         */
-        $dataset->select('id','numeroComunicacao', 'tipoComunicacao', 'registroReprodutor','nomeReprodutor', 'registroMatriz','nomeMatriz', 'dataCruzamento')->distinct();
-        return $dataset;
+      	$dataset->select('id','codigoCruzamento','numeroComunicacao', 'tipoComunicacao', 'registroReprodutor','nomeReprodutor', 'registroMatriz','nomeMatriz', 'dataCruzamento')->distinct();
+	return $dataset;
     }
 
     public function getJsonDataset($datasetName)
